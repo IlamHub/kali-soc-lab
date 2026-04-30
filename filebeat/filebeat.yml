@@ -1,0 +1,37 @@
+# ===========================
+# Filebeat Config — Suricata
+# ===========================
+
+filebeat.inputs:
+  - type: filestream
+    id: suricata-eve
+    enabled: true
+    paths:
+      - /var/log/suricata/eve.json
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+    fields:
+      log_source: suricata
+    fields_under_root: true
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+output.logstash:
+  hosts: ["localhost:5044"]
+  loadbalance: true
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0640
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
